@@ -8,9 +8,10 @@ import {Route53} from "./services/route53";
 
 const PORT = process.env.PORT ?? 3000
 const app: Express = express()
+const args = process.argv.slice(2);
 
-const init = async () => {
-    await Route53.init()
+const init = async (accessKeyId: string, secretAccessKey: string) => {
+    await Route53.init(accessKeyId, secretAccessKey)
 }
 
 app.use(bodyParser.urlencoded({extended: true}));
@@ -31,4 +32,4 @@ app.listen(PORT, () => {
     console.log(`Listen on port ${PORT}`)
 })
 
-init()
+init(args[0], args[1])
