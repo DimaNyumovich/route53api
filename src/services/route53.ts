@@ -45,7 +45,7 @@ export class Route53 {
                 console.log('No hosted zones found.');
             }
         } catch (error) {
-            console.error('Error listing hosted zones:', error);
+            console.error('Error listing hosted zones: ', error);
         }
     };
 
