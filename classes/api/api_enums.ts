@@ -2,8 +2,9 @@ export enum GENERAL_API {
     general  = '/api'
 }
 
-export enum DBS_API {
+export enum ROUTE53_API {
 
-    addBuying  = '/addBuying'
+    startPage  = '/startPage',
+    createSubdomain = '/createSubdomain'
 
 }

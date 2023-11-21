@@ -1,35 +1,69 @@
-// import express, { Express, Request, Response} from "express";
-import express, {Express, Request, Response} from 'express';
-// import * as http from 'http';
+import express from 'express';
+import * as http from 'http';
 import * as bodyParser from 'body-parser';
-import * as process from 'process';
+import {RestManager} from "./applicationServices/restConnections/restManager";
+import {ApiManager} from "./services/api/ApiManager";
+import {GENERAL_API} from "../classes/api/api_enums";
+
+const cors = require('cors');
 import path from 'path'
-import {Route53} from "./services/route53";
+import {MyRoute53} from "./services/myRoute53";
 
-const PORT = process.env.PORT ?? 3000
-const app: Express = express()
-const args = process.argv.slice(2);
 
-const init = async (accessKeyId: string, secretAccessKey: string) => {
-    await Route53.init(accessKeyId, secretAccessKey)
+// const servConf = require('./../../config/services.json')
+
+class Server {
+
+    private port = 3000;
+    // private socketIO: SocketIo;
+    private app: any;
+
+    public static bootstrap(): Server {
+        return new Server();
+    }
+
+    // restRouterConfig: REST_ROUTER_CONFIG [] = [
+    //     {class: ApiManager, path: GENERAL_API._general},
+    // ];
+
+    constructor() {
+        this.app = express();
+        this.app.use(cors());
+
+        this.app.use(bodyParser.json({limit: '50mb'}));
+        this.app.use(bodyParser.urlencoded({extended: false}));
+        const server = this.createServer(this.app);
+        // this.socketIO = new SocketIo(server);
+        this.listen(server);
+        // ConfigManager.init();
+
+        this.runListenFunctions(this.app);
+        // this.app.get("/", (req, res) => {
+        //     res.sendFile(path.resolve('../', 'static', 'index.html'))
+        // })
+    }
+
+    private runListenFunctions = (app) => {
+        const restManager: RestManager = new RestManager(app);
+        ApiManager.listen(restManager.routers[GENERAL_API.general]);
+        const args = process.argv.slice(2);
+        MyRoute53.init(args[0], args[1])
+        // this.restRouterConfig.forEach((restRouter: REST_ROUTER_CONFIG) => {
+        //     const expressRouter = express.Router();
+        //     this.app.use(restRouter.path, expressRouter);
+        //     restRouter.class.listen(expressRouter);
+        // });
+    };
+
+    private createServer = (app) => {
+        return http.createServer(app);
+    };
+
+    private listen = (server): any => {
+        server.listen(this.port, () => {
+            console.log('Running server on port ', this.port);
+        });
+    }
 }
 
-app.use(bodyParser.urlencoded({extended: true}));
-app.use(bodyParser.json());
-
-app.get("/", (req, res) => {
-    res.sendFile(path.resolve('../', 'static', 'index.html'))
-})
-
-app.post('/submit', (req: Request, res: Response) => {
-    const {subdomain} = req.body;
-
-    res.redirect('/');
-    // res.json({ success: true, message: 'Data received successfully' });
-});
-
-app.listen(PORT, () => {
-    console.log(`Listen on port ${PORT}`)
-})
-
-init(args[0], args[1])
+Server.bootstrap();

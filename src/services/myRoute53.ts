@@ -4,11 +4,11 @@ import {
     ChangeResourceRecordSetsCommand,
     Change
 } from '@aws-sdk/client-route-53';
-import {HOSTED_ZONE_DATA} from "../../classes/all.typings";
+import {HOSTED_ZONE_DATA, SUBDOMAIN_DATA} from "../../classes/all.typings";
 
-export class Route53 {
+export class MyRoute53 {
 
-    private static instance: Route53 = new Route53();
+    private static instance: MyRoute53 = new MyRoute53();
     private hostedZonesDataMap: HOSTED_ZONE_DATA[] = []
     private credentials = {
         accessKeyId: '',
@@ -49,13 +49,13 @@ export class Route53 {
         }
     };
 
-    private createSubdomain = async () => {
+    private createSubdomain = async (subdomainData: SUBDOMAIN_DATA) => {
 
-        const hostedZoneId = 'Z03264163QIWB8NIPLV70'; // Замените на ID вашей зоны в Route 53
-        // const hostedZoneId = 'online-it-school.com'; // Замените на ID вашей зоны в Route 53
-        const subdomainName = 'lilia'; // Имя вашего поддомена
+        const hostedZoneId = 'Z03264163QIWB8NIPLV70';
+        const hostedZone = subdomainData.hostedZone
+        const subdomainName = subdomainData.subdomainName
         const recordType = 'A'; // Тип записи (например, A, CNAME и т.д.)
-        const recordValue = '192.168.1.1'; // Значение записи (например, IP-адрес)
+        const recordValue = subdomainData.recordValue; // Значение записи (например, IP-адрес)
 
         const changes: Change[] = [
             {
@@ -89,8 +89,7 @@ export class Route53 {
         }
     };
 
-
-    public static init = Route53.instance.init;
-    public static createSubdomain = Route53.instance.createSubdomain;
+    public static init = MyRoute53.instance.init;
+    public static createSubdomain = MyRoute53.instance.createSubdomain;
 
 }
