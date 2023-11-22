@@ -4,12 +4,11 @@ import {
     ChangeResourceRecordSetsCommand,
     Change
 } from '@aws-sdk/client-route-53';
-import {ANSWER_R53_DATA, ASYNC_RESPONSE, HOSTED_ZONE_DATA, SUBDOMAIN_DATA} from "../../classes/all.typings";
+import { ASYNC_RESPONSE, SUBDOMAIN_DATA} from "../../classes/all.typings";
 
 export class MyRoute53 {
 
     private static instance: MyRoute53 = new MyRoute53();
-    // private hostedZonesDataMap: HOSTED_ZONE_DATA[] = []
     private hostedZonesDataMap = new Map<string, string>()
     private credentials = {
         accessKeyId: '',
@@ -26,13 +25,13 @@ export class MyRoute53 {
         this.credentials.secretAccessKey = secretAccessKey
         const credentials = this.credentials
         this.route53Client = new Route53Client({credentials});
-
         await this.getAllDomainNames()
-
-        // await this.createSubdomain()
     }
 
-    private getAllDomainNames = async () => {
+    private getAllDomainNames = async (): Promise<ASYNC_RESPONSE> => {
+        const res: ASYNC_RESPONSE = {
+            success: false
+        }
         try {
             const command = new ListHostedZonesCommand({});
             const result = await this.route53Client.send(command);
@@ -42,16 +41,22 @@ export class MyRoute53 {
                     // this.hostedZonesDataMap.push({hostedZone: zone.Name, hostedZoneID: zone.Id})
                     this.hostedZonesDataMap.set(zone.Name, zone.Id)
                 });
-                console.log('List of domain names:', this.hostedZonesDataMap);
+                // console.log('List of domain names:', this.hostedZonesDataMap);
+                res.success = true
+                res.data = Array.from(this.hostedZonesDataMap.keys()).map(str => str.slice(0, -1));
+                let a = 0
             } else {
-                console.log('No hosted zones found.');
+                res.data = 'No hosted zones found.'
+                // console.log('No hosted zones found.');
             }
         } catch (error) {
-            console.error('Error listing hosted zones:', error);
+            res.data = error
+            // console.error('Error listing hosted zones:', error);
         }
+        return res
     };
 
-    private createSubdomain = async (subdomainData: SUBDOMAIN_DATA): Promise<Object> => {
+    private createSubdomain = async (subdomainData: SUBDOMAIN_DATA): Promise<ASYNC_RESPONSE> => {
         const res: ASYNC_RESPONSE = {
             success: false
         }
@@ -97,7 +102,7 @@ export class MyRoute53 {
         try {
             const command = new ChangeResourceRecordSetsCommand(params);
             const result = await this.route53Client.send(command);
-            console.log('Subdomain created successfully:', result);
+            // console.log('Subdomain created successfully:', result);
             res.success = true
             res.data = result
         } catch (error) {
@@ -120,5 +125,6 @@ export class MyRoute53 {
 
     public static init = MyRoute53.instance.init;
     public static createSubdomain = MyRoute53.instance.createSubdomain;
+    public static getAllDomainNames = MyRoute53.instance.getAllDomainNames;
 
 }

@@ -41,31 +41,48 @@ export class ApiManager implements IRest {
 
         MyRoute53.createSubdomain(requestBody)
             .then((data: ASYNC_RESPONSE) =>{
-                // res.success = data.isSuccess;
-                // res.data = {json: data.data};
                 response.send(data);
             })
-            // .then((data: ASYNC_RESPONSE) => {
-            //     res.success = data.success;
-            //     res.data = {json: data.data};
-            //     response.send(res);
-            // })
             .catch((data: ASYNC_RESPONSE) => {
-                // res.success = data.success;
-                // res.data = {json: data.data};
                 response.send(data);
             });
     };
+
+    private getAllDomains = (request: Request, response: Response) => {
+        const res: ASYNC_RESPONSE = {success: false};
+        MyRoute53.getAllDomainNames()
+            .then((data: ASYNC_RESPONSE) =>{
+                response.send(data);
+            })
+            .catch((data: ASYNC_RESPONSE) => {
+                response.send(data);
+            });
+    };
+
+    // private getAllSubdomains = (request: Request, response: Response) => {
+    //     const res: ASYNC_RESPONSE = {success: false};
+    //     const requestBody: SUBDOMAIN_DATA = request.body;
+    //
+    //     MyRoute53.createSubdomain(requestBody)
+    //         .then((data: ASYNC_RESPONSE) =>{
+    //             response.send(data);
+    //         })
+    //         .catch((data: ASYNC_RESPONSE) => {
+    //             response.send(data);
+    //         });
+    // };
+
+
 
 
 
 
 
     routers: {} = {
-        // [DBS_API.getLogsByFilter]: this.getLogsByFilter,
-        // [DBS_API.getLogs]: this.getAllLogs,
         [ROUTE53_API.startPage]: this.startPage,
         [ROUTE53_API.createSubdomain]: this.createSubdomain,
+        [ROUTE53_API.getAllDomains]: this.getAllDomains,
+        // [ROUTE53_API.getAllSubdomains]: this.getAllSubdomains,
 
 
     };

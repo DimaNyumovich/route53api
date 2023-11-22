@@ -5,6 +5,8 @@ export enum GENERAL_API {
 export enum ROUTE53_API {
 
     startPage  = '/startPage',
-    createSubdomain = '/createSubdomain'
+    createSubdomain = '/createSubdomain',
+    getAllSubdomains = '/getAllSubdomains',
+    getAllDomains = '/getAllDomains'
 
 }
