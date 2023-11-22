@@ -8,7 +8,7 @@ import {
     Request,
     Response
 } from 'express';
-import {ASYNC_RESPONSE, SUBDOMAIN_DATA} from "../../../classes/all.typings";
+import {ANSWER_R53_DATA, ASYNC_RESPONSE, SUBDOMAIN_DATA} from "../../../classes/all.typings";
 // import {DBS_API} from "../../../classes/api/api_enums";
 import {IRest} from "../../../classes/interfaces/IRest";
 import path from 'path'
@@ -40,19 +40,21 @@ export class ApiManager implements IRest {
         const requestBody: SUBDOMAIN_DATA = request.body;
 
         MyRoute53.createSubdomain(requestBody)
-            .then(() =>{
-                console.log('YES')
+            .then((data: ASYNC_RESPONSE) =>{
+                // res.success = data.isSuccess;
+                // res.data = {json: data.data};
+                response.send(data);
             })
             // .then((data: ASYNC_RESPONSE) => {
             //     res.success = data.success;
             //     res.data = {json: data.data};
             //     response.send(res);
             // })
-            // .catch((data: ASYNC_RESPONSE) => {
-            //     res.success = data.success;
-            //     res.data = {json: data.data};
-            //     response.send(res);
-            // });
+            .catch((data: ASYNC_RESPONSE) => {
+                // res.success = data.success;
+                // res.data = {json: data.data};
+                response.send(data);
+            });
     };
 
 

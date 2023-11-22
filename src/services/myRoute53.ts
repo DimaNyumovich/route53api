@@ -4,12 +4,13 @@ import {
     ChangeResourceRecordSetsCommand,
     Change
 } from '@aws-sdk/client-route-53';
-import {HOSTED_ZONE_DATA, SUBDOMAIN_DATA} from "../../classes/all.typings";
+import {ANSWER_R53_DATA, ASYNC_RESPONSE, HOSTED_ZONE_DATA, SUBDOMAIN_DATA} from "../../classes/all.typings";
 
 export class MyRoute53 {
 
     private static instance: MyRoute53 = new MyRoute53();
-    private hostedZonesDataMap: HOSTED_ZONE_DATA[] = []
+    // private hostedZonesDataMap: HOSTED_ZONE_DATA[] = []
+    private hostedZonesDataMap = new Map<string, string>()
     private credentials = {
         accessKeyId: '',
         secretAccessKey: ''
@@ -38,7 +39,8 @@ export class MyRoute53 {
 
             if (result.HostedZones && result.HostedZones.length > 0) {
                 result.HostedZones.map((zone) => {
-                    this.hostedZonesDataMap.push({hostedZone: zone.Name, hostedZoneID: zone.Id})
+                    // this.hostedZonesDataMap.push({hostedZone: zone.Name, hostedZoneID: zone.Id})
+                    this.hostedZonesDataMap.set(zone.Name, zone.Id)
                 });
                 console.log('List of domain names:', this.hostedZonesDataMap);
             } else {
@@ -49,21 +51,33 @@ export class MyRoute53 {
         }
     };
 
-    private createSubdomain = async (subdomainData: SUBDOMAIN_DATA) => {
+    private createSubdomain = async (subdomainData: SUBDOMAIN_DATA): Promise<Object> => {
+        const res: ASYNC_RESPONSE = {
+            success: false
+        }
+        let hostedZoneId = ''
+        const ifHostedZonesDataMapHasHostedZone = this.ifHostedZonesDataMapHasHostedZone(subdomainData.hostedZone)
+        if(ifHostedZonesDataMapHasHostedZone){
+            hostedZoneId = ifHostedZonesDataMapHasHostedZone as string
+        }else {
+            res.data = 'hostedZone doesn\'t exist'
+            return res
+        }
 
-        const hostedZoneId = 'Z03264163QIWB8NIPLV70';
+
         const hostedZone = subdomainData.hostedZone
         const subdomainName = subdomainData.subdomainName
-        const recordType = 'A'; // Тип записи (например, A, CNAME и т.д.)
-        const recordValue = subdomainData.recordValue; // Значение записи (например, IP-адрес)
+        const recordType = 'A'
+        const recordValue = subdomainData.recordValue;
+        const TTL = subdomainData.TTL;
 
         const changes: Change[] = [
             {
                 Action: 'CREATE',
                 ResourceRecordSet: {
-                    Name: `${subdomainName}.online-it-school.com`, // Собираем полное имя поддомена
+                    Name: `${subdomainName}.${hostedZone}`, // Собираем полное имя поддомена
                     Type: recordType,
-                    TTL: 300,
+                    TTL: TTL,
                     ResourceRecords: [
                         {
                             Value: recordValue,
@@ -84,10 +98,25 @@ export class MyRoute53 {
             const command = new ChangeResourceRecordSetsCommand(params);
             const result = await this.route53Client.send(command);
             console.log('Subdomain created successfully:', result);
+            res.success = true
+            res.data = result
         } catch (error) {
             console.error('Error creating subdomain:', error);
+            error.reason = 'Subdomain already exists'
+            res.data = error
         }
+        return res
     };
+    
+    private ifHostedZonesDataMapHasHostedZone = (hostedZone: string): string | boolean => {
+        let res: string | boolean = undefined
+        if(this.hostedZonesDataMap.has(hostedZone + '.')){
+            res = this.hostedZonesDataMap.get(hostedZone + '.').split('/')[2]
+        }else {
+            res = false
+        }
+        return res
+    }
 
     public static init = MyRoute53.instance.init;
     public static createSubdomain = MyRoute53.instance.createSubdomain;

@@ -10,7 +10,12 @@ export type HOSTED_ZONE_DATA = {
 export type SUBDOMAIN_DATA = {
     hostedZone: string,
     subdomainName: string,
-    recordType: string,
     recordValue: string,
     TTL: number
 }
+
+export type ANSWER_R53_DATA = {
+    isSuccess: boolean,
+    data: any
+}
+
