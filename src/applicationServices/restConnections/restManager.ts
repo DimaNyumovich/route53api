@@ -1,6 +1,6 @@
 import {NextFunction, Request, Response} from 'express';
 import {GENERAL_API} from "../../../classes/api/api_enums";
-const _ = require('lodash');
+
 const express = require('express');
 
 const router = express.Router();

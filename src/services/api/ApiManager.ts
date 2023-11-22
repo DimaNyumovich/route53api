@@ -2,7 +2,6 @@
 
 import {ROUTE53_API} from "../../../classes/api/api_enums";
 
-const _ = require('lodash');
 import * as core from 'express-serve-static-core';
 import {
     Request,

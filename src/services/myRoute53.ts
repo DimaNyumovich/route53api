@@ -25,7 +25,8 @@ export class MyRoute53 {
         this.credentials.accessKeyId = accessKeyId
         this.credentials.secretAccessKey = secretAccessKey
         const credentials = this.credentials
-        this.route53Client = new Route53Client({credentials});
+        const region = 'eu-central-1'
+        this.route53Client = new Route53Client({region, credentials});
         await this.getAllDomainNames()
     }
 
@@ -39,20 +40,19 @@ export class MyRoute53 {
 
             if (result.HostedZones && result.HostedZones.length > 0) {
                 result.HostedZones.map((zone) => {
-                    // this.hostedZonesDataMap.push({hostedZone: zone.Name, hostedZoneID: zone.Id})
                     this.hostedZonesDataMap.set(zone.Name, zone.Id)
                 });
-                // console.log('List of domain names:', this.hostedZonesDataMap);
+                console.log('List of domain names:', this.hostedZonesDataMap);
                 res.success = true
                 res.data = Array.from(this.hostedZonesDataMap.keys()).map(str => str.slice(0, -1));
                 let a = 0
             } else {
                 res.data = 'No hosted zones found.'
-                // console.log('No hosted zones found.');
+                console.log('No hosted zones found.');
             }
         } catch (error) {
             res.data = error
-            // console.error('Error listing hosted zones:', error);
+            console.error('Error listing hosted zones:', error);
         }
         return res
     };

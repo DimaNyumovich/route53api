@@ -34,8 +34,14 @@ class Server {
     private runListenFunctions = (app) => {
         const restManager: RestManager = new RestManager(app);
         ApiManager.listen(restManager.routers[GENERAL_API.general]);
-        const args = process.argv.slice(2);
-        MyRoute53.init(args[0], args[1])
+        // const args = process.argv.slice(2);
+        // MyRoute53.init(args[0], args[1])
+        const ACCESS_KEY = process.env.ACCESS_KEY
+        const SECRET_KEY = process.env.SECRET_KEY
+        console.log(ACCESS_KEY)
+        console.log(SECRET_KEY)
+        MyRoute53.init(ACCESS_KEY, SECRET_KEY)
+
     };
 
     private createServer = (app) => {
