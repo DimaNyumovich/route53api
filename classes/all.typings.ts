@@ -14,8 +14,7 @@ export type SUBDOMAIN_DATA = {
     TTL: number
 }
 
-export type ANSWER_R53_DATA = {
-    isSuccess: boolean,
-    data: any
+export type DOMAIN_NAME = {
+    hostedZone: string
 }
 

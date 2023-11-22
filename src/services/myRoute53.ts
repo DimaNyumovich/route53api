@@ -2,9 +2,10 @@ import {
     Route53Client,
     ListHostedZonesCommand,
     ChangeResourceRecordSetsCommand,
-    Change
+    Change,
+    ListResourceRecordSetsCommand
 } from '@aws-sdk/client-route-53';
-import { ASYNC_RESPONSE, SUBDOMAIN_DATA} from "../../classes/all.typings";
+import {ASYNC_RESPONSE, DOMAIN_NAME, SUBDOMAIN_DATA} from "../../classes/all.typings";
 
 export class MyRoute53 {
 
@@ -123,8 +124,45 @@ export class MyRoute53 {
         return res
     }
 
+    private getAllSubDomains = async (domainName: DOMAIN_NAME): Promise<ASYNC_RESPONSE> => {
+        const res: ASYNC_RESPONSE = {
+            success: false
+        }
+        let hostedZoneId = ''
+        const ifHostedZonesDataMapHasHostedZone = this.ifHostedZonesDataMapHasHostedZone(domainName.hostedZone)
+        if(ifHostedZonesDataMapHasHostedZone){
+            hostedZoneId = ifHostedZonesDataMapHasHostedZone as string
+        }else {
+            res.data = 'hostedZone doesn\'t exist'
+            return res
+        }
+
+        const params = {
+            HostedZoneId: hostedZoneId
+        };
+        try {
+            const command = new ListResourceRecordSetsCommand(params);
+            const result = await this.route53Client.send(command);
+
+            if (result.ResourceRecordSets && result.ResourceRecordSets.length > 0) {
+                const subdomainNames = result.ResourceRecordSets.map((recordSet) => recordSet.Name.slice(0, -1));
+                // console.log('List of subdomain names:', subdomainNames);
+                res.success = true
+                res.data = subdomainNames
+            } else {
+                // console.log('No subdomains found.');
+                res.data = 'No subdomains found.'
+            }
+        } catch (error) {
+            // console.error('Error listing subdomains:', error);
+            res.data = error
+        }
+        return res
+    };
+
     public static init = MyRoute53.instance.init;
     public static createSubdomain = MyRoute53.instance.createSubdomain;
     public static getAllDomainNames = MyRoute53.instance.getAllDomainNames;
+    public static getAllSubDomains = MyRoute53.instance.getAllSubDomains;
 
 }
